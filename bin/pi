@@ -1,0 +1,94 @@
+#!/bin/bash
+
+#
+export PI_BASE="$(cd `dirname "${BASH_SOURCE[0]}"` && cd .. && pwd)"
+export PI_SCRIPT=$PI_BASE/bin/script
+
+echo "PI_BASE $PI_BASE"
+
+#
+usage() {
+cat << EOF
+usage: ${0##*/} options
+
+  init       clone tools and kernel source
+  setimage   set the current img to work with
+  mount      mount distro. mount <distro name>   
+  unmount    unmount distro
+  build      build custom image
+  flash      load custom image onto sd card  
+  help       this help message
+EOF
+}
+
+init() {
+  echo "Preparing to build custom distro..."
+  bash $PI_SCRIPT/init.sh
+}
+
+setimage() {
+  echo "Setting distro image..."
+  bash $PI_SCRIPT/setimage.sh $1
+}
+
+build() {
+  echo "Building image..."
+  bash $PI_SCRIPT/build.sh $1
+
+  sudo -E bash $PI_SCRIPT/install.sh $1
+}
+
+mount() {
+  echo "Mounting..."
+  bash $PI_SCRIPT/mount.sh
+}
+
+unmount() {
+  echo "Unmounting..."
+  bash $PI_SCRIPT/unmount.sh
+}
+
+##
+
+if [ $# -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+#
+while true; do
+  if [ $1 ]; then
+    cmd=$1; shift
+    case $cmd in
+      init)
+	init
+        ;;
+      setimage)
+        if [ $@ ]; then
+          setimage $@
+        else 
+          usage
+        fi
+        ;;
+      mount)
+        mount
+        ;;
+      unmount|umount)
+        unmount
+        ;;
+      build)
+        build $@
+        ;;
+      help)
+        usage
+        ;;
+      *)
+       usage
+      ;;
+    esac
+    exit 0
+  else
+    break
+  fi
+done
+##

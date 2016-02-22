@@ -1,0 +1,8 @@
+build
+linux
+tools
+work
+my/linux
+my/build
+**/*.img
+opt/*
