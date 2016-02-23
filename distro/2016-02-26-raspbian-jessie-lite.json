@@ -1,0 +1,38 @@
+{
+  "id": "2016-02-26-raspbian-jessie-lite",
+  "title": "Raspbian Jessie Lite",
+  "description": "Minimal image based on Debian Jessie",
+  "version": "February 2016",
+  "release_date": "2016-02-26",
+  "kernel_version": "4.1",
+  "archive": "2016-02-26-raspbian-jessie-lite.zip",
+  "content_type": "application/zip",
+  "content_length": "298287382",
+  "file": "2016-02-26-raspbian-jessie-lite.img",
+  "location": [
+    "http://vx2-downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2016-02-29/2016-02-26-raspbian-jessie-lite.zip"
+  ],
+  "checksum": {
+    "algorithm": "sha1",
+    "hash": "0d58e68d62cb3e55bdc73860a6be2281783b8c0f"
+  },
+  "partition": [
+    {
+      "number": "2",
+      "resize": "y",
+      "file": "/",
+      "sector": "131072",
+      "size": "512"
+    },
+    {
+      "number": "1",
+      "resize": "n",
+      "file": "/boot",
+      "sector": "8192",
+      "size": "512"
+    }
+  ],
+  "meta": {
+    "author": "Qiang Li"
+  }
+}

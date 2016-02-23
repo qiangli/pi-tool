@@ -1,0 +1,299 @@
+#!/bin/bash
+
+#
+export PI_BASE="$(cd `dirname "${BASH_SOURCE[0]}"` && cd .. && pwd)"
+export PI_SCRIPT=${PI_BASE}/bin/script
+
+#echo "PI_BASE ${PI_BASE}"
+
+DEBUG=
+#DEBUG=-x
+
+#
+usage() {
+cat << EOF
+usage: ${0##*/} options
+
+  init       clone tools and kernel source
+  build      build custom kernel
+  install    copy custom changes to distro image
+  mount      mount distro image
+  unmount    unmount distro image
+
+  download   download image archive
+  extract    extract image from archive
+  image      list available images or set the current image  to work with
+
+  flash      list available device or load custom image onto sd card  
+  resizefs   resize file system to maximum sdcard capacity
+
+  resync     sync linux source and tools and clean up work area
+  utils      install/upate a few utilities
+  help       this help message
+EOF
+}
+
+##
+init() {
+  bash ${DEBUG} ${PI_SCRIPT}/init.sh
+}
+
+##
+images() {
+  echo "List of distro images:"
+  local list=`ls -1 ${PI_BASE}/distro/*.json |sort |uniq`
+  for img in ${list}; do
+    img="${img##*/}"
+    echo "${img%.*}"
+  done
+}
+
+## param: image descriptor
+setimage() {
+  if [ $# -eq 0 ]; then
+    images
+    exit 0
+  fi
+  bash ${DEBUG} ${PI_SCRIPT}/setimage.sh $1
+}
+
+## build Linux kernel
+## param: model -  Raspberry PI model pi1|pi2|compute, default pi2
+build() {
+  local model=$1
+
+  bash ${DEBUG} ${PI_SCRIPT}/build.sh ${model}
+}
+
+## Build kernel and copy custom changes to image
+## param model
+install() {
+  local model=$1
+
+  mount
+
+  build ${model}
+
+  sudo -E bash ${DEBUG} ${PI_SCRIPT}/install.sh ${model}
+
+  unmount
+}
+
+##
+mount() {
+  bash ${DEBUG} ${PI_SCRIPT}/mount.sh; if [ $? -ne 0 ]; then
+    exit 1
+  fi
+}
+
+##
+unmount() {
+  bash ${DEBUG} ${PI_SCRIPT}/unmount.sh; if [ $? -ne 0 ]; then
+    exit 1
+  fi
+}
+
+##
+utils() {
+  sudo bash ${DEBUG} ${PI_SCRIPT}/utils.sh
+}
+
+##
+check_utils() {
+  echo "Checking required utils..."
+  which udevadm findmnt ddrescue; if [ $? -ne 0 ]; then
+    utils
+  fi
+}
+
+##
+resync() {
+  bash ${DEBUG} ${PI_SCRIPT}/resync.sh
+}
+
+## param: device
+resizefs() {
+  sudo -E bash ${DEBUG} ${PI_SCRIPT}/resizefs.sh $1
+}
+
+confirm() {
+  read -p "$1 (y/n)? "
+  case ${REPLY,,} in
+    y|yes) return 0;;
+    n|no) return 1;;
+    *) return 1;;
+   esac
+   return 1;
+}
+
+
+## param: device
+## param: prompt - y|n
+flash_device() {
+  sudo -E bash ${DEBUG} ${PI_SCRIPT}/flash.sh $1 $2
+}
+
+## flash <no arg> - show available devices
+## flash /dev/xxx - load customg.img on device
+## flash /dev/xxx image - set image, install, and load onto device
+##
+## param: device - /dev/* , required
+## param: [image] - distro image descriptor
+## param: [model] -  Raspberry PI model pi1|pi2|compute, default pi2
+flash() {
+  local device
+  local image
+  local model=pi2
+
+  while true; do
+  if [ $1 ]; then
+    case $1 in
+      p|p?|pi?|compute)
+        model=$1
+        ;;
+      /dev/*)
+        device=$1
+        ;;
+      *)
+      image=$1
+      ;;
+    esac
+    shift
+  else
+    break
+  fi
+  done
+
+  if [ "x${device}" == "x" ]; then
+    #show device list
+    flash_device
+    exit 0
+  fi
+
+  echo "Installing image ${image} onto ${device} ${model}"
+
+  if [ "x${image}" == "x" ] && [ ! -f ${PI_BASE}/work/custom.img ]; then
+    echo "Image not set or passed as argument"
+    images
+    exit 1
+  fi
+    
+  if [ "x${device}" != "x" ]; then
+    lsblk --list --paths --noheadings --output NAME | grep --quiet ${device}; if [ $? -ne 0 ]; then
+      echo "Invalid device specified"
+      exit 1
+    fi
+    echo ""
+    confirm "All data on ${device} will be wiped out. Are you sure?"; if [ $? -ne 0 ]; then
+      echo "Aborted"
+      exit 2
+    fi
+  fi
+
+  findmnt ${PI_BASE}/build; if [ $? -eq 0 ]; then
+    echo "${PI_BASE}/build is being used, please unmount first and try again"
+    exit 1
+  fi
+  #
+  
+  local start_date=`date`
+  local end_date
+
+  #set image
+  if [ "x${image}" != "x" ]; then
+    setimage ${image}
+  fi
+
+  #rebuild
+  if [ "x${model}" != "x" ]; then
+    install ${model}
+  fi
+
+  #flash
+  flash_device ${device} y #no prompt
+
+  resizefs ${device}
+
+  #
+  end_date=`date`
+  local start_time=`date --date="$start_date" +%s`
+  local end_time=`date --date="$end_date" +%s`
+
+  echo
+  echo "Started: ${start_date}  ended: ${end_date} elapsed: $(expr ${end_time} - ${start_time}) seconds"
+  echo
+  echo "Installation completed!"  
+}
+
+## param: image descriptor
+download() {
+  bash ${DEBUG} ${PI_SCRIPT}/download.sh $1
+}
+
+## param: image descriptor
+extract() {
+  bash ${DEBUG} ${PI_SCRIPT}/extract.sh $1
+}
+
+####
+
+if [ $# -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+#
+while true; do
+  if [ $1 ]; then
+    cmd=$1; shift
+    case ${cmd} in
+      init)
+	    init
+        ;;
+      image|images|setimage)
+        setimage $@
+        ;;
+      mount)
+        mount
+        ;;
+      unmount|umount)
+        unmount
+        ;;
+      build)
+        build $@
+        ;;
+      flash)
+        flash $@
+        ;;
+      resizefs)
+        resizefs $@
+        ;;
+      install)
+        install $@
+        ;;
+      resync)
+        resync
+        ;;
+      utils|util)
+        utils
+        ;;
+      download)
+        download $@
+        ;;
+      extract)
+        extract $@
+        ;;
+      help)
+        usage
+        ;;
+      *)
+       usage
+      ;;
+    esac
+    exit 0
+  else
+    break
+  fi
+done
+
+####

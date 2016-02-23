@@ -1,19 +1,31 @@
 #!/bin/bash
 
-DESC=$PI_BASE/work/custom.desc
-IMAGE=$PI_BASE/work/custom.img
-MOUNT_POINT=$PI_BASE/build
+if [ "x${PI_BASE}" == "x" ]; then
+  echo "PI_BASE not set"
+  exit 1
+fi
+#
 
-echo $@
-echo "Start mount"
+DESC=${PI_BASE}/work/custom.json
+IMAGE=${PI_BASE}/work/custom.img
+MOUNT_POINT=${PI_BASE}/build
 
-if [ ! -f $IMAGE ] || [ ! -f $DESC ]; then
-	echo "Image $IMAGE or descriptor $DESC  does not exist, did you run 'pi setimage <distro>'?"
+#echo $@
+
+if [ ! -f ${IMAGE} ] || [ ! -f ${DESC} ]; then
+	echo "Image ${IMAGE} or descriptor ${DESC} does not exist"
 	exit 1
 fi
 
-#
-python $PI_SCRIPT/mount.py $IMAGE $DESC $MOUNT_POINT
+echo "Mounting ${IMAGE} at ${MOUNT_POINT}"
 
-echo "End mount"
+#
+mkdir -p ${MOUNT_POINT}
+
+python ${PI_SCRIPT}/mount.py ${IMAGE} ${DESC} ${MOUNT_POINT}; if [ $? -ne 0 ]; then
+    echo "Mount failed"
+    exit 1
+fi
+
+echo "Mounted"
 ##

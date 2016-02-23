@@ -1,0 +1,36 @@
+{
+  "id": "2016-02-09-raspbian-jessie",
+  "title": "Raspbian Jessie",
+  "version": "February 2016",
+  "release_date": "2016-02-09",
+  "archive": "2016-02-09-raspbian-jessie.zip",
+  "content_type": "application/zip",
+  "content_length": "1471521381",
+  "file": "2016-02-09-raspbian-jessie.img",
+  "location": [
+    "http://vx2-downloads.raspberrypi.org/raspbian/images/raspbian-2016-02-09/2016-02-09-raspbian-jessie.zip"
+  ],
+  "checksum": {
+    "algorithm": "sha1",
+    "hash": "da329713833e0785ffd94796304b7348803381db"
+  },
+  "partition": [
+    {
+      "number": "2",
+      "resize": "y",
+      "file": "/",
+      "sector": "131072",
+      "size": "512"
+    },
+    {
+      "number": "1",
+      "resize": "n",
+      "file": "/boot",
+      "sector": "8192",
+      "size": "512"
+    }
+  ],
+  "meta": {
+    "author": "Qiang Li"
+  }
+}

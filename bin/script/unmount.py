@@ -1,28 +1,30 @@
-import sys
-import os
-import subprocess
 import json
-
-def unmount(mount):
-	cmd = "sudo umount " + mount
-	
-	print "cmd: " + cmd
-	subprocess.call([cmd], shell=True)  
-  
-from pprint import pprint
+import pprint
+import subprocess
+import sys
 
 
-desc=sys.argv[1]
-mp=sys.argv[2]
+def unmount(mp):
+    cmd = "sudo umount " + mp
+
+    print "cmd: " + cmd
+    return subprocess.call([cmd], shell=True)
+
+
+desc = sys.argv[1]
+mountpoint = sys.argv[2]
 
 print "Decriptor: " + desc
-print "Mount point: " +  mp
+print "Mount point: " + mountpoint
 
-with open(desc) as file:    
-	data = json.load(file)
-pprint(data)
+with open(desc) as file:
+    data = json.load(file)
+#pprint.pprint(data)
 
-for p in reversed(data['partitions']):
-	unmount(mp + ('' if p['file'] == '/' else p['file']))
+for p in reversed(data['partition']):
+    rc = unmount(mountpoint + ('' if p['file'] == '/' else p['file']))
+    if rc != 0:
+        exit(1)
 
 print "Done"
+exit(0)

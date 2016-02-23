@@ -1,0 +1,38 @@
+{
+  "id": "ubuntu-mate-15.10.3-desktop-armhf-raspberry-pi-2",
+  "title": "Ubuntu MATE 15.10.3",
+  "description": "",
+  "version": "",
+  "release_date": "",
+  "kernel_version": "",
+  "archive": "ubuntu-mate-15.10.3-desktop-armhf-raspberry-pi-2.img.xz",
+  "content_type": "application/x-xz",
+  "content_length": "993549420",
+  "file": "",
+  "location": [
+    "http://can.ubuntu-mate.net/raspberry-pi/ubuntu-mate-15.10.3-desktop-armhf-raspberry-pi-2.img.xz"
+  ],
+  "checksum": {
+    "algorithm": "sha256",
+    "hash": "49ac8dfb73c203fe698a1a3c139b5cbec023c0d567253998e942d1fa236bbb94"
+  },
+  "partition": [
+    {
+      "number": "2",
+      "resize": "y",
+      "file": "/",
+      "sector": "133120",
+      "size": "512"
+    },
+    {
+      "number": "1",
+      "resize": "n",
+      "file": "/boot",
+      "sector": "8192",
+      "size": "512"
+    }
+  ],
+  "meta": {
+    "author": "Qiang Li"
+  }
+}

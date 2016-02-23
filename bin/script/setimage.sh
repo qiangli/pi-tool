@@ -1,22 +1,45 @@
-#!/bin/bash -x
+#!/bin/bash
+## param: image id
 
-SRC_IMAGE=$PI_BASE/distro/${1%.*}.img
-DESC=$PI_BASE/distro/${1%.*}.desc
-WORK=$PI_BASE/work
-
-if [ ! -f $SRC_IMAGE ] || [ ! -f $DESC]; then
-	echo "Image $SRC_IMAGE or descriptor $DESC does not exist"
-	exit 1
+if [ "x${PI_BASE}" == "x" ]; then
+  echo "PI_BASE not set"
+  exit 1
 fi
 
 #
-echo "Start setimage"
+normalize_image_id() {
+  if [ "${1##*.}" == "desc" ]; then
+    echo "${1%.*}"
+  else
+    echo "$1"
+  fi
+}
+
+IMAGE_ID=$(normalize_image_id $1)
+SRC_IMAGE=${PI_BASE}/image/${IMAGE_ID}.img
+DESC=${PI_BASE}/distro/${IMAGE_ID}.json
+WORK=${PI_BASE}/work
+
+mkdir -p ${WORK}
+
 #
-echo "Copying $SRC_IMAGE to $WORK"
-cp -v $SRC_IMAGE $WORK/custom.img
+if [ ! -f ${DESC} ]; then
+	echo "Descriptor ${DESC} does not exist"
+	exit 1
+fi
 
-echo "Copying $DESC to $WORK"
-cp -v $DESC $WORK/custom.desc
+if [ ! -f ${SRC_IMAGE} ]; then
+	bash ${PI_SCRIPT}/extract.sh ${IMAGE_ID}; if [ $? -ne 0 ]; then
+		echo "Failed to setimage because of corrupted image archive"
+		exit 1
+	fi
+fi
+#
+echo "Copying ${SRC_IMAGE} to ${WORK}"
+cp -v ${SRC_IMAGE} ${WORK}/custom.img
 
-echo "End setimage"
+echo "Copying ${DESC} to ${WORK}"
+cp -v ${DESC} ${WORK}/custom.json
+
+echo "Done"
 ##
