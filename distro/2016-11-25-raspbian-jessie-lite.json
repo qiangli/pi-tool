@@ -1,0 +1,36 @@
+{
+  "id": "2016-11-25-raspbian-jessie-lite",
+  "title": "Raspbian Jessie Lite",
+  "version": "November 2016",
+  "release_date": "2016-11-25",
+  "archive": "2016-11-25-raspbian-jessie-lite.zip",
+  "content_type": "application/zip",
+  "content_length": "307495992",
+  "file": "2016-11-25-raspbian-jessie-lite.img",
+  "location": [
+    "http://vx2-downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2016-11-29/2016-11-25-raspbian-jessie-lite.zip"
+  ],
+  "checksum": {
+    "algorithm": "sha1",
+    "hash": "6741a30d674d39246302a791f1b7b2b0c50ef9b7"
+  },
+  "partition": [
+    {
+      "number": "2",
+      "resize": "y",
+      "file": "/",
+      "sector": "131072",
+      "size": "512"
+    },
+    {
+      "number": "1",
+      "resize": "n",
+      "file": "/boot",
+      "sector": "8192",
+      "size": "512"
+    }
+  ],
+  "meta": {
+    "author": "Qiang Li"
+  }
+}
